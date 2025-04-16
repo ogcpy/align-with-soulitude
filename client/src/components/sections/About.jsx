@@ -1,9 +1,9 @@
 export default function About() {
   return (
-    <section id="about" className="py-16 md:py-24">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="flex flex-col md:flex-row gap-12 items-center">
-          <div className="md:w-1/2">
+    <section id="about" className="py-12 sm:py-16 md:py-24">
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
+        <div className="flex flex-col md:flex-row gap-8 sm:gap-12 items-center">
+          <div className="w-full md:w-1/2">
             <h2 className="text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-6 text-neutral-800">
               About <span className="text-[#EAB69B]">Soulitude</span>
             </h2>

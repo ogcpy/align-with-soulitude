@@ -78,15 +78,15 @@ export default function Booking() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl relative">
+    <div className="container mx-auto px-3 sm:px-4 py-8 sm:py-12 max-w-6xl relative">
       <a 
         href="/" 
-        className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors"
+        className="absolute right-3 sm:right-4 top-3 sm:top-4 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors text-xl"
         aria-label="Return to homepage"
       >
         ×
       </a>
-      <h1 className="text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-6 text-center text-neutral-800">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-4 sm:mb-6 text-center text-neutral-800">
         Book Your <span className="text-[#EAB69B]">Consultation</span>
       </h1>
       <p className="text-center text-neutral-600 mb-12 max-w-3xl mx-auto font-['Raleway']">

@@ -24,33 +24,13 @@ export default function Hero() {
   };
 
   return (
-    <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Video Background */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        {/* Video will be added later - placeholder for now */}
-        <video
-          ref={videoRef}
-          className="absolute object-cover w-full h-full"
-          autoPlay
-          loop
-          muted
-          playsInline
-        >
-          {/* Video source will be added later */}
-          {/* <source src="/path-to-video.mp4" type="video/mp4" /> */}
-        </video>
-        
-        {/* Overlay to ensure text is readable */}
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-      </div>
-      
-      {/* Content */}
-      <div className="container mx-auto px-4 max-w-6xl relative z-10">
+    <section id="hero" className="bg-[#F1F1F1] py-12 sm:py-20 md:py-28">
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
         <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-['Playfair_Display'] font-bold mb-6 text-white leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-['Playfair_Display'] font-bold mb-4 sm:mb-6 text-neutral-800 leading-tight px-2">
             Find Balance & Inner Peace
           </h1>
-          <p className="text-lg md:text-xl max-w-2xl mx-auto text-white text-opacity-90 mb-10 font-light font-['Raleway']">
+          <p className="text-lg md:text-xl max-w-2xl mx-auto text-neutral-800 text-opacity-90 mb-10 font-light font-['Raleway']">
             Guiding you on your journey to align mind, body, and spirit through holistic practices and mindful living.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">

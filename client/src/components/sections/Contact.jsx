@@ -8,8 +8,8 @@ export default function Contact() {
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 
   return (
-    <section id="contact" className="py-16 md:py-24 bg-[#F1F1F1] bg-opacity-50">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <section id="contact" className="py-12 sm:py-16 md:py-24 bg-[#F1F1F1] bg-opacity-50">
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-6 text-neutral-800">
             Connect <span className="text-[#EAB69B]">With Us</span>
@@ -20,8 +20,8 @@ export default function Contact() {
           </p>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-12 items-center justify-center">
-          <div className="md:w-1/2 lg:w-2/5">
+        <div className="flex flex-col md:flex-row gap-8 sm:gap-12 items-center justify-center">
+          <div className="w-full md:w-1/2">
             <div className="space-y-8">
               <div className="flex items-start">
                 <div className="bg-white p-4 rounded-full mr-5 shadow-sm">
@@ -47,7 +47,7 @@ export default function Contact() {
                   </a>
                 </div>
               </div>
-              
+
               <div className="flex items-start">
                 <div className="bg-white p-4 rounded-full mr-5 shadow-sm">
                   <Mail className="h-8 w-8 text-[#EAB69B]" />
@@ -60,11 +60,11 @@ export default function Contact() {
               </div>
             </div>
           </div>
-          
-          <div className="md:w-1/2 lg:w-2/5">
+
+          <div className="w-full md:w-1/2">
             <div className="bg-white p-8 rounded-lg shadow-md">
               <h3 className="text-2xl font-['Playfair_Display'] font-medium mb-6 text-neutral-800 text-center">Why Connect on WhatsApp?</h3>
-              
+
               <div className="space-y-6">
                 <div className="border-b border-neutral-100 pb-4">
                   <h4 className="font-medium text-[#EAB69B] mb-2 font-['Raleway']">Instant Responses</h4>
@@ -72,21 +72,21 @@ export default function Contact() {
                     Get answers to your questions right away, without waiting for emails.
                   </p>
                 </div>
-                
+
                 <div className="border-b border-neutral-100 pb-4">
                   <h4 className="font-medium text-[#EAB69B] mb-2 font-['Raleway']">Personal Connection</h4>
                   <p className="text-neutral-600 font-['Raleway']">
                     Chat directly with our spiritual guides for a more personal experience.
                   </p>
                 </div>
-                
+
                 <div className="border-b border-neutral-100 pb-4">
                   <h4 className="font-medium text-[#EAB69B] mb-2 font-['Raleway']">Easy Scheduling</h4>
                   <p className="text-neutral-600 font-['Raleway']">
                     Book sessions and consultations with ease through direct messaging.
                   </p>
                 </div>
-                
+
                 <div>
                   <h4 className="font-medium text-[#EAB69B] mb-2 font-['Raleway']">Share Multimedia</h4>
                   <p className="text-neutral-600 font-['Raleway']">
@@ -94,7 +94,7 @@ export default function Contact() {
                   </p>
                 </div>
               </div>
-              
+
               <div className="mt-8 text-center">
                 <a 
                   href={whatsappUrl} 

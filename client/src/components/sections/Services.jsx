@@ -55,10 +55,10 @@ export default function Services() {
   };
 
   return (
-    <section id="services" className="bg-[#F1F1F1] py-16 md:py-24">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-6 text-neutral-800">
+    <section id="services" className="bg-[#F1F1F1] py-12 sm:py-16 md:py-24">
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
+        <div className="text-center mb-10 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-4 sm:mb-6 text-neutral-800">
             Our <span className="text-[#EAB69B]">Services</span>
           </h2>
           <p className="text-neutral-600 max-w-2xl mx-auto font-['Raleway']">
