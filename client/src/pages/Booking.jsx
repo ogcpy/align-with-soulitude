@@ -104,14 +104,16 @@ export default function Booking() {
                 Select your preferred date for the consultation
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={handleDateChange}
-                className="rounded-md border"
-                disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
-              />
+            <CardContent className="overflow-hidden">
+              <div className="w-full max-w-[300px] mx-auto">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={handleDateChange}
+                  className="rounded-md border"
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                />
+              </div>
             </CardContent>
           </Card>
 
