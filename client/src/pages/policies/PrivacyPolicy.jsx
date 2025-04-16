@@ -1,10 +1,16 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 export default function PrivacyPolicy() {
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-4xl relative">
+      <a 
+        href="/"
+        className="absolute right-4 top-4 text-neutral-400 hover:text-[#EAB69B] transition-all"
+      >
+        <X className="h-6 w-6" />
+      </a>
       <a 
         href="/"
         className="inline-flex items-center text-[#EAB69B] hover:text-opacity-80 mb-8"
@@ -14,9 +20,7 @@ export default function PrivacyPolicy() {
       </a>
       <h1 className="text-3xl font-['Playfair_Display'] font-medium mb-8">Privacy Policy</h1>
       
-      <div className="prose max-w-none space-y-6 text-neutral-700 font-['Raleway']">
-        <p>Last updated: {new Date().toLocaleDateString()}</p>
-        
+      <div className="prose max-w-none space-y-6 text-neutral-700 font-['Raleway']">        
         <h2 className="text-2xl font-medium mt-8 mb-4">1. Introduction</h2>
         <p>Welcome to Align with Soulitude. We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we handle your personal information when you visit our website or use our services.</p>
         

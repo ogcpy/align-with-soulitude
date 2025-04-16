@@ -1,10 +1,16 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 export default function CookiePolicy() {
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="container mx-auto px-4 py-12 max-w-4xl relative">
+      <a 
+        href="/"
+        className="absolute right-4 top-4 text-neutral-400 hover:text-[#EAB69B] transition-all"
+      >
+        <X className="h-6 w-6" />
+      </a>
       <a 
         href="/"
         className="inline-flex items-center text-[#EAB69B] hover:text-opacity-80 mb-8"
@@ -15,8 +21,6 @@ export default function CookiePolicy() {
       <h1 className="text-3xl font-['Playfair_Display'] font-medium mb-8">Cookie Policy</h1>
       
       <div className="prose max-w-none space-y-6 text-neutral-700 font-['Raleway']">
-        <p>Last updated: {new Date().toLocaleDateString()}</p>
-        
         <h2 className="text-2xl font-medium mt-8 mb-4">1. What Are Cookies</h2>
         <p>Cookies are small text files that are placed on your device when you visit our website. They help us provide you with a better experience and allow certain features to work.</p>
 
