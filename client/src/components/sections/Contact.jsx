@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { MapPin, Mail, MessageCircle } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 
 export default function Contact() {
   // Replace this with your actual WhatsApp number
@@ -45,16 +45,6 @@ export default function Contact() {
                       Chat on WhatsApp
                     </Button>
                   </a>
-                </div>
-              </div>
-              
-              <div className="flex items-start">
-                <div className="bg-white p-4 rounded-full mr-5 shadow-sm">
-                  <MapPin className="h-8 w-8 text-[#EAB69B]" />
-                </div>
-                <div>
-                  <h3 className="font-medium text-neutral-800 text-xl mb-2 font-['Raleway']">Visit Our Space</h3>
-                  <p className="text-neutral-600 font-['Raleway']">123 Serenity Lane, Mindful City, MC 12345</p>
                 </div>
               </div>
               
@@ -112,7 +102,7 @@ export default function Contact() {
                   rel="noopener noreferrer"
                 >
                   <Button 
-                    className="bg-[#EAB69B] text-white px-8 py-6 rounded-md hover:bg-opacity-90 transition-all font-medium font-['Raleway']"
+                    className="bg-[#EAB69B] text-white px-8 py-6 rounded-md hover:bg-[#D49B80] transition-all font-medium font-['Raleway']"
                   >
                     Start Your Journey Today
                   </Button>
