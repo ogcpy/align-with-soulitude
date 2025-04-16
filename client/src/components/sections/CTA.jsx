@@ -25,7 +25,7 @@ export default function CTA() {
           <div className="md:w-1/3 flex justify-center md:justify-end">
             <Button 
               onClick={() => handleNavClick('contact')}
-              className="bg-white text-[#EAB69B] px-8 py-6 rounded-md hover:bg-opacity-90 transition-all font-['Raleway'] text-sm uppercase tracking-wider inline-block"
+              className="bg-white text-[#EAB69B] px-8 py-3 rounded-md hover:bg-[gray] transition-all font-['Raleway'] text-sm uppercase tracking-wider inline-block"
             >
               Book a Consultation
             </Button>

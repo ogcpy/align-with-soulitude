@@ -43,7 +43,7 @@ export default function Hero() {
             <Button 
               onClick={() => handleNavClick('about')}
               variant="outline"
-              className="border border-white text-white px-8 py-6 rounded-md hover:bg-white hover:bg-opacity-10 transition-all font-['Raleway'] text-sm uppercase tracking-wider"
+              className="border border-white text-black px-8 py-6 rounded-md hover:bg-white hover:bg-opacity-10 transition-all font-['Raleway'] text-sm uppercase tracking-wider"
             >
               Learn More
             </Button>
