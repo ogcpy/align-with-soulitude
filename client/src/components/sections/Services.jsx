@@ -24,7 +24,7 @@ function ServiceCard({ title, description, image, link }) {
           <ArrowRight className="h-4 w-4 ml-1 group-hover:ml-2 transition-all" />
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
