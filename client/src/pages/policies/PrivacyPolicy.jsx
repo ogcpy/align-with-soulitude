@@ -11,13 +11,7 @@ export default function PrivacyPolicy() {
       >
         <X className="h-6 w-6" />
       </a>
-      <a 
-        href="/"
-        className="inline-flex items-center text-[#EAB69B] hover:text-opacity-80 mb-8"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
-      </a>
+      
       <h1 className="text-3xl font-['Playfair_Display'] font-medium mb-8">Privacy Policy</h1>
       
       <div className="prose max-w-none space-y-6 text-neutral-700 font-['Raleway']">        
