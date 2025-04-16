@@ -136,9 +136,9 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Align with Soulitude. All rights reserved.
           </p>
           <div className="flex space-x-6 font-['Raleway']">
-            <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Privacy Policy</a>
-            <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Terms of Service</a>
-            <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Cookie Policy</a>
+            <a href="/privacy-policy" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Privacy Policy</a>
+            <a href="/terms-of-service" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Terms of Service</a>
+            <a href="/cookie-policy" className="text-neutral-400 hover:text-[#EAB69B] transition-all text-sm">Cookie Policy</a>
           </div>
         </div>
       </div>
