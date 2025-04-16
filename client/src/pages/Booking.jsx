@@ -78,7 +78,14 @@ export default function Booking() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
+    <div className="container mx-auto px-4 py-12 max-w-6xl relative">
+      <a 
+        href="/" 
+        className="absolute right-4 top-4 w-8 h-8 flex items-center justify-center rounded-full bg-neutral-100 hover:bg-neutral-200 transition-colors"
+        aria-label="Return to homepage"
+      >
+        ×
+      </a>
       <h1 className="text-3xl md:text-4xl font-['Playfair_Display'] font-medium mb-6 text-center text-neutral-800">
         Book Your <span className="text-[#EAB69B]">Consultation</span>
       </h1>
