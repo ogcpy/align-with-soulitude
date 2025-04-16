@@ -121,18 +121,22 @@ export default function Booking() {
                   <p className="text-neutral-600">Loading services...</p>
                 </div>
               ) : services && services.length > 0 ? (
-                <Select onValueChange={handleServiceChange} value={selectedService}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {services.map((service) => (
-                      <SelectItem key={service.id} value={service.id.toString()}>
-                        {service.title} - ${service.price}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid gap-3">
+                  {services.map((service) => (
+                    <button
+                      key={service.id}
+                      onClick={() => handleServiceChange(service.id.toString())}
+                      className={`w-full p-4 text-left rounded-lg border transition-all ${
+                        selectedService === service.id.toString()
+                          ? 'border-[#EAB69B] bg-[#EAB69B]/10'
+                          : 'border-gray-200 hover:border-[#EAB69B]'
+                      }`}
+                    >
+                      <div className="font-medium">{service.title}</div>
+                      <div className="text-sm text-neutral-600">${service.price}</div>
+                    </button>
+                  ))}
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-32">
                   <p className="text-neutral-600">No services available. Please contact us directly.</p>
@@ -155,8 +159,9 @@ export default function Booking() {
                 </div>
               ) : availableSlots && availableSlots.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {availableSlots
+                  {[...new Map(availableSlots
                     .filter(slot => !slot.isBooked)
+                    .map(slot => [slot.startTime, slot])).values()]
                     .map((slot) => (
                       <Button
                         key={slot.id}
