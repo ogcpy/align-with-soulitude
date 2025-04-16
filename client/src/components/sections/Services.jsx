@@ -5,7 +5,7 @@ import { Youtube } from "lucide-react";
 
 function ServiceCard({ title, description, image, link }) {
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg h-full">
+    <a href={link} className="block bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:opacity-90 h-full">
       <div className="h-48 overflow-hidden">
         <img 
           src={image} 
@@ -19,10 +19,10 @@ function ServiceCard({ title, description, image, link }) {
         <p className="text-neutral-600 mb-4 text-sm font-['Raleway'] flex-grow">
           {description}
         </p>
-        <a href={link} className="text-[#EAB69B] font-medium flex items-center text-sm group font-['Raleway']">
+        <div className="text-[#EAB69B] font-medium flex items-center text-sm group font-['Raleway']">
           Learn more 
           <ArrowRight className="h-4 w-4 ml-1 group-hover:ml-2 transition-all" />
-        </a>
+        </div>
       </div>
     </div>
   );
@@ -68,7 +68,12 @@ export default function Services() {
           ))}
         </div>
         
-        <div className="bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg">
+        <a 
+          href="https://www.youtube.com/channel/YOUR_CHANNEL_ID" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="block bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:opacity-90"
+        >
           <div className="h-48 md:h-64 overflow-hidden">
             <img 
               src="https://images.unsplash.com/photo-1600618528240-fb9fc964b853?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80"
@@ -81,17 +86,12 @@ export default function Services() {
             <p className="text-neutral-600 mb-4 text-sm font-['Raleway']">
               Join us on our spiritual journey through our podcast series where we explore consciousness, healing, and personal transformation.
             </p>
-            <a 
-              href="https://www.youtube.com/channel/YOUR_CHANNEL_ID" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-[#EAB69B] font-medium flex items-center text-sm group font-['Raleway']"
-            >
+            <div className="text-[#EAB69B] font-medium flex items-center text-sm group font-['Raleway']">
               Visit our YouTube Channel
               <Youtube className="h-4 w-4 ml-2" />
-            </a>
+            </div>
           </div>
-        </div>
+        </a>
       </div>
     </section>
   );
