@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 export default function Header() {
+  const [, navigate] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -51,10 +53,10 @@ export default function Header() {
             Contact
           </button>
           <Button 
-            onClick={() => handleNavClick('contact')}
-            className="bg-[#EAB69B] text-white hover:bg-opacity-90 transition-all font-['Raleway'] text-sm uppercase tracking-wider"
+            onClick={() => navigate('/booking')}
+            className="bg-[#EAB69B] hover:bg-[#D49B80] text-white transition-all font-['Raleway'] text-sm uppercase tracking-wider"
           >
-            Book Now
+            Book Consultation
           </Button>
         </nav>
         
@@ -92,10 +94,10 @@ export default function Header() {
               Contact
             </button>
             <Button 
-              onClick={() => handleNavClick('contact')}
-              className="bg-[#EAB69B] text-white hover:bg-opacity-90 transition-all font-['Raleway'] text-sm uppercase tracking-wider text-center"
+              onClick={() => navigate('/booking')}
+              className="bg-[#EAB69B] hover:bg-[#D49B80] text-white transition-all font-['Raleway'] text-sm uppercase tracking-wider text-center"
             >
-              Book Now
+              Book Consultation
             </Button>
           </div>
         </div>
