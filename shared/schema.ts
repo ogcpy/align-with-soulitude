@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, varchar, date, time } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -40,6 +40,51 @@ export const insertServiceSchema = createInsertSchema(services).pick({
 
 export type InsertService = z.infer<typeof insertServiceSchema>;
 export type Service = typeof services.$inferSelect;
+
+// Available time slots for consultations
+export const availableSlots = pgTable("available_slots", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull(),
+  startTime: time("start_time").notNull(),
+  endTime: time("end_time").notNull(),
+  isBooked: boolean("is_booked").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAvailableSlotSchema = createInsertSchema(availableSlots).pick({
+  date: true,
+  startTime: true,
+  endTime: true,
+  isBooked: true,
+});
+
+export type InsertAvailableSlot = z.infer<typeof insertAvailableSlotSchema>;
+export type AvailableSlot = typeof availableSlots.$inferSelect;
+
+// Consultation bookings
+export const consultations = pgTable("consultations", {
+  id: serial("id").primaryKey(),
+  slotId: integer("slot_id").notNull(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  serviceId: integer("service_id").notNull(),
+  message: text("message"),
+  status: text("status").notNull().default("pending"), // pending, confirmed, cancelled, completed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertConsultationSchema = createInsertSchema(consultations).pick({
+  slotId: true,
+  name: true,
+  email: true,
+  phone: true,
+  serviceId: true,
+  message: true,
+});
+
+export type InsertConsultation = z.infer<typeof insertConsultationSchema>;
+export type Consultation = typeof consultations.$inferSelect;
 
 // Testimonials from clients
 export const testimonials = pgTable("testimonials", {
