@@ -47,16 +47,16 @@ export default function Footer() {
               Your journey to balance, clarity, and inner peace begins with us. We're here to guide you every step of the way.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
+              <a href="https://www.facebook.com/@alignwithsoulitude" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
+              <a href="https://www.instagram.com/mydharmahealing" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
+              <a href="https://www.x.com/h4serenity" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
+              <a href="https://www.youtube.com/@alignwithsoulitude" className="text-neutral-400 hover:text-[#EAB69B] transition-all">
                 <Youtube className="h-5 w-5" />
               </a>
             </div>

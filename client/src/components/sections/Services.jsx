@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Youtube } from "lucide-react";
+import podcastImage from "@/docs/podcast.jpg"
 
 function ServiceCard({ title, description, image, link }) {
   return (
@@ -69,14 +70,14 @@ export default function Services() {
         </div>
         
         <a 
-          href="https://www.youtube.com/channel/YOUR_CHANNEL_ID" 
+          href="https:/www.youtube.com/@alignwithsoulitude" 
           target="_blank" 
           rel="noopener noreferrer" 
           className="block bg-white rounded-lg shadow-md overflow-hidden transition-all hover:shadow-lg hover:opacity-90"
         >
           <div className="h-48 md:h-64 overflow-hidden">
             <img 
-              src="https://images.unsplash.com/photo-1600618528240-fb9fc964b853?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80"
+              src={podcastImage}
               alt="Intuitive Podcast" 
               className="w-full h-full object-cover"
             />

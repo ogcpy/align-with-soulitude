@@ -8,13 +8,16 @@ export default function About() {
               About <span className="text-[#EAB69B]">Soulitude</span>
             </h2>
             <p className="text-neutral-600 mb-6 leading-relaxed font-['Raleway']">
-              Welcome to "Align with Soulitude" your dedicated space for exploring the depths of spirituality, personal transformation, and the power of being in alignment with your true self.
+            Welcome to "Align with Soulitude" a sacred space for remembering who you are through presence, soul connection, and divine timing.
             </p>
             <p className="text-neutral-600 mb-6 leading-relaxed font-['Raleway']">
-              Whether you're awakening your Kundalini energy, exploring sound healing, or delving into plant medicine journeys, we are here to guide you on a soulful adventure of growth and expansion.
+            This is not a place for performance or perfection — but a home for the raw, the real, and the resonant. Each episode is an intuitive unfolding, guided by the energy of the moment. Some moments may empower you, others may stir something deeper. All of it is welcome.
             </p>
             <p className="text-neutral-600 mb-6 leading-relaxed font-['Raleway']">
-              Our mission is to create a sanctuary for those seeking spiritual enlightenment, inner peace, and profound self-discovery.
+            Healing isn’t linear. We honour the ascents, descents, and stillness in between. Through ancient wisdom and presence-led insights, I offer gentle guidance for those on the path of awakening, soul evolution, and inner remembrance.
+            </p>
+            <p className="text-neutral-600 mb-6 leading-relaxed font-['Raleway']">
+            Whether you’re exploring mysticism or learning to be with yourself in deeper ways — know that you’re not alone. May each word ripple exactly where it's needed.
             </p>
             <div className="flex items-center gap-4 mt-8">
               <div className="h-0.5 w-12 bg-[#EAB69B]"></div>

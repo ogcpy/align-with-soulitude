@@ -3,7 +3,7 @@ import { Mail, MessageCircle } from "lucide-react";
 
 export default function Contact() {
   // Replace this with your actual WhatsApp number
-  const whatsappNumber = "+1234567890";
+  const whatsappNumber = "+447835150232";
   const whatsappMessage = encodeURIComponent("Hello, I'd like to learn more about Align with Soulitude services.");
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${whatsappMessage}`;
 

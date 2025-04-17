@@ -217,6 +217,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  (async () => {
+    const services = await storage.getServices();
+    console.log(services);
+  })();
   
   const httpServer = createServer(app);
   
