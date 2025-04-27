@@ -26,8 +26,9 @@ if (!connectionString) {
 export const pool = new Pool({ 
   connectionString,
   ssl: {
-    rejectUnauthorized: false // Required for Vercel deployment
-  }
+    rejectUnauthorized: false, // Required for Vercel deployment
+  },
+  max: 2
 });
 
 export const db = drizzle({ client: pool, schema });
