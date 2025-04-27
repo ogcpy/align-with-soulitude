@@ -1,3 +1,24 @@
+/*
+IMPORTANT VERCEL DEPLOYMENT INSTRUCTIONS:
+1. Make sure to add all environment variables in the Vercel project settings:
+   - DATABASE_URL: Your Neon PostgreSQL connection string
+   - STRIPE_SECRET_KEY: Your Stripe secret key
+   - VITE_STRIPE_PUBLIC_KEY: Your Stripe publishable key
+   - STRIPE_CURRENCY: Currency to use (e.g., 'GBP')
+   - SENDGRID_API_KEY: Your SendGrid API key
+   - SENDER_EMAIL: Email address for sending notifications
+   - SENDER_NAME: Display name for the sender email
+   - SESSION_SECRET: Random string for session security
+
+2. If you get a 404 NOT_FOUND error, try:
+   - Going to your Vercel project settings
+   - Under "Build & Development Settings", set the Output Directory to "client/dist"
+   - Redeploy your project
+
+3. Make sure your Vercel's Project Settings > Functions Region
+   is set to the same region as your Neon database for optimal performance
+*/
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -61,13 +82,49 @@ app.use(session({
   }
 }));
 
-// For Vercel, we need to include the schema directly
-// In production, you would properly import this from shared/schema.ts
+// Direct SQL queries for Vercel
+// We'll use simple SQL queries instead of the Drizzle ORM for simplicity in the serverless environment
 const { eq } = require('drizzle-orm');
-// Define schema here for Vercel (simplified version)
-// The actual schema would come from shared/schema.ts
-const services = {
-  id: { name: 'id' }
+
+// Basic schema structure
+const schema = {
+  services: {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    price: 'price',
+    durationMinutes: 'duration_minutes',
+    isActive: 'is_active',
+    type: 'type',
+    maximumParticipants: 'maximum_participants'
+  },
+  availableSlots: {
+    id: 'id',
+    date: 'date',
+    startTime: 'start_time',
+    endTime: 'end_time',
+    isBooked: 'is_booked',
+    serviceId: 'service_id'
+  },
+  consultations: {
+    id: 'id',
+    slotId: 'slot_id',
+    name: 'name',
+    email: 'email',
+    phone: 'phone',
+    serviceId: 'service_id',
+    message: 'message',
+    status: 'status'
+  },
+  discountCodes: {
+    id: 'id',
+    code: 'code',
+    description: 'description',
+    discountPercent: 'discount_percent',
+    isActive: 'is_active',
+    usageLimit: 'usage_limit',
+    usageCount: 'usage_count'
+  }
 };
 
 // Create a basic API route
@@ -82,7 +139,19 @@ app.get('/api/health', (req, res) => {
 // Services endpoints
 app.get('/api/services', async (req, res) => {
   try {
-    const services = await db.query.services.findMany();
+    // Use raw SQL query for better compatibility with Vercel
+    const result = await pool.query('SELECT * FROM services WHERE is_active = true ORDER BY id');
+    const services = result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      price: parseFloat(row.price),
+      durationMinutes: row.duration_minutes,
+      isActive: row.is_active,
+      type: row.type,
+      maximumParticipants: row.maximum_participants,
+      createdAt: row.created_at
+    }));
     res.json(services);
   } catch (error) {
     console.error('Error fetching services:', error);
@@ -93,12 +162,26 @@ app.get('/api/services', async (req, res) => {
 app.get('/api/services/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    // For Vercel, using a simplified query approach
-    const [service] = await db.execute(`SELECT * FROM services WHERE id = $1`, [parseInt(id)]);
+    // For Vercel, using raw pool query
+    const result = await pool.query('SELECT * FROM services WHERE id = $1', [parseInt(id)]);
     
-    if (!service) {
+    if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ message: 'Service not found' });
     }
+    
+    // Map DB row to camelCase object
+    const row = result.rows[0];
+    const service = {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      price: parseFloat(row.price),
+      durationMinutes: row.duration_minutes,
+      isActive: row.is_active,
+      type: row.type,
+      maximumParticipants: row.maximum_participants,
+      createdAt: row.created_at
+    };
     
     res.json(service);
   } catch (error) {
@@ -112,8 +195,36 @@ app.get('/api/available-slots', async (req, res) => {
   try {
     const { fromDate, serviceId } = req.query;
     
-    // Here we would use the actual query with filters
-    const slots = await db.query.availableSlots.findMany();
+    // Construct SQL query with filters
+    let query = 'SELECT * FROM available_slots WHERE is_booked = false';
+    const params = [];
+    
+    // Add date filter if provided
+    if (fromDate) {
+      query += ' AND date >= $1';
+      params.push(fromDate);
+    }
+    
+    // Add service filter if provided
+    if (serviceId) {
+      query += params.length === 0 ? ' AND service_id = $1' : ' AND service_id = $' + (params.length + 1);
+      params.push(parseInt(serviceId));
+    }
+    
+    // Add ordering
+    query += ' ORDER BY date, start_time';
+    
+    const result = await pool.query(query, params);
+    
+    // Map DB rows to camelCase objects
+    const slots = result.rows.map(row => ({
+      id: row.id,
+      date: row.date,
+      startTime: row.start_time,
+      endTime: row.end_time,
+      isBooked: row.is_booked,
+      serviceId: row.service_id
+    }));
     
     res.json(slots);
   } catch (error) {
@@ -162,5 +273,16 @@ app.use('/api/*', (req, res) => {
   res.status(404).json({ message: 'API endpoint not found' });
 });
 
-// Export for Vercel serverless function
+// Vercel serverless function
 module.exports = app;
+
+// For serverless deployment on Vercel
+if (process.env.VERCEL) {
+  console.log("Running in Vercel environment");
+  
+  // Export the handler for serverless function
+  module.exports = (req, res) => {
+    // Don't expose the app object directly
+    return app(req, res);
+  };
+}
