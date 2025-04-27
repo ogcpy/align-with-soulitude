@@ -78,3 +78,5 @@ For security reasons:
 1. Admin credentials must be set up during the first deployment
 2. Use a strong, unique password for production
 3. Keep your admin credentials secure and never share them
+
+Author: Bhashana Davidson
