@@ -5,10 +5,29 @@ import * as schema from "@shared/schema";
 import dotenv from 'dotenv';
 
 dotenv.config();
-neonConfig.webSocketConstructor = ws;
 
-// Always use the external Neon PostgreSQL database
-const connectionString = 'postgresql://neondb_owner:npg_hqrXK72xnNaD@ep-purple-bar-abxju02g.eu-west-2.aws.neon.tech/neondb?sslmode=require';
+// Configure WebSocket for Neon
+if (process.env.NODE_ENV === 'production') {
+  // In production (Vercel), use the native WebSocket implementation
+  neonConfig.webSocketConstructor = WebSocket;
+} else {
+  // In development, use the ws package
+  neonConfig.webSocketConstructor = ws;
+}
 
-export const pool = new Pool({ connectionString });
+// Use environment variable for database connection
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is not set');
+}
+
+// Configure pool with SSL settings
+export const pool = new Pool({ 
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false // Required for Vercel deployment
+  }
+});
+
 export const db = drizzle({ client: pool, schema });

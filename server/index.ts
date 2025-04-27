@@ -11,6 +11,10 @@ const PostgresSessionStore = connectPg(session);
 
 const app = express();
 app.use(express.json());
+// Test database connection on startup
+pool.connect()
+  .then(() => console.log('Database connected successfully'))
+  .catch(err => console.error('Database connection error:', err));
 app.use(express.urlencoded({ extended: false }));
 
 // Setup session middleware with more permissive settings for development
