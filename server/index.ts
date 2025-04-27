@@ -14,23 +14,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Setup session middleware with more permissive settings for development
-app.use(session({
-  store: new PostgresSessionStore({
-    pool,
-    createTableIfMissing: true,
-    tableName: 'session' // Make sure table name is explicit
+app.use(
+  session({
+    store: new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
+      tableName: "session", // Make sure table name is explicit
+    }),
+    secret: process.env.SESSION_SECRET || "align-with-soulitude-secret",
+    resave: true, // Changed to true to ensure session is saved
+    saveUninitialized: true, // Changed to true to create session for all requests
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      secure: false, // Allow non-HTTPS in development
+      httpOnly: false, // Allow JavaScript access for easier debugging
+      sameSite: "lax", // Less restrictive SameSite setting
+    },
+    name: "align.sid", // Custom session name
   }),
-  secret: process.env.SESSION_SECRET || 'align-with-soulitude-secret',
-  resave: true, // Changed to true to ensure session is saved
-  saveUninitialized: true, // Changed to true to create session for all requests
-  cookie: {
-    maxAge: 1000 * 60 * 60 * 24, // 1 day
-    secure: false, // Allow non-HTTPS in development
-    httpOnly: false, // Allow JavaScript access for easier debugging
-    sameSite: 'lax' // Less restrictive SameSite setting
-  },
-  name: 'align.sid' // Custom session name
-}));
+);
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -65,50 +67,52 @@ app.use((req, res, next) => {
 (async () => {
   // Initialize email and WhatsApp settings
   initializeSettings();
-  
+
   const server = await registerRoutes(app);
-  
+
   // Create a direct admin login route outside the admin middleware
-  app.post('/api/admin-login', async (req, res) => {
-    console.log('Admin login attempt with:', req.body.username);
+  app.post("/api/admin-login", async (req, res) => {
+    console.log("Admin login attempt with:", req.body.username);
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
+      return res
+        .status(400)
+        .json({ message: "Username and password are required" });
     }
-    
+
     // For demo purposes - always allow admin/password
-    if (username === 'admin' && password === 'password') {
+    if (username === "admin" && password === "password") {
       // Create admin user info
       const adminUser = {
         id: 1,
-        username: 'admin',
-        firstName: 'Admin',
-        lastName: 'User',
-        email: 'admin@example.com',
-        role: 'admin',
-        isActive: true
+        username: "admin",
+        firstName: "Admin",
+        lastName: "User",
+        email: "admin@example.com",
+        role: "admin",
+        isActive: true,
       };
-      
+
       // Store admin user in session
       if (req.session) {
         req.session.adminUser = adminUser;
-        console.log('Admin session created successfully');
+        console.log("Admin session created successfully");
       } else {
-        console.log('Session not available');
+        console.log("Session not available");
       }
-      
+
       return res.status(200).json({
         success: true,
-        message: 'Login successful',
-        user: adminUser
+        message: "Login successful",
+        user: adminUser,
       });
     }
-    
-    console.log('Invalid credentials');
-    return res.status(401).json({ message: 'Invalid credentials' });
+
+    console.log("Invalid credentials");
+    return res.status(401).json({ message: "Invalid credentials" });
   });
-  
+
   // Register admin routes
   registerAdminRoutes(app);
 
@@ -129,13 +133,16 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 3000
+  // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 3000;
-  server.listen({
-    port,
-    }, () => {
-    log(`serving on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    },
+  );
 })();

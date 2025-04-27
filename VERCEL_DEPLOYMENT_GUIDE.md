@@ -94,6 +94,94 @@ After deployment, add all required environment variables in the Vercel dashboard
 
 If you encounter issues with the deployment:
 
+### Fixing 404 NOT_FOUND Errors
+
+If you see a 404 NOT_FOUND error after deployment (especially with error code like "404: NOT_FOUND Code: NOT_FOUND ID: lhr1::xxxxxx"), try these solutions in order:
+
+**IMPORTANT:** This specific error indicates a problem with how Vercel is handling the routes and build output. Follow these steps carefully to fix it.
+
+1. **Update Project Settings**:
+   - Go to your project in the Vercel dashboard
+   - Navigate to "Settings" > "Build & Development Settings"
+   - Set the "Framework Preset" to "Vite"
+   - Set the "Output Directory" to `client/dist`
+   - Make sure "Install Command" is set to `npm install`
+   - Make sure "Build Command" is set to `npm run build` 
+   - Click "Save"
+   - Go to the "Deployments" tab and click "Redeploy" on your latest deployment
+
+2. **Check Function Region**:
+   - Go to "Settings" > "Functions"
+   - Set the region to be the same as your Neon database region (e.g., "iad1" for US East, "fra1" for Europe)
+   - Redeploy your project
+
+3. **Verify API Routes**:
+   - Test a simple API endpoint like `/api/health` to see if the API is accessible
+   - If API routes work but the frontend doesn't, check the `vercel.json` routing configuration
+
+4. **Inspect Deployment**:
+   - Go to "Deployments" and click on your latest deployment
+   - Select "Functions" to see your serverless functions
+   - Check if the `/api/index.js` function is listed and has no errors
+
+5. **Try a Fresh Deployment**:
+   - Create a new Vercel project
+   - Import your repository again
+   - Apply all settings as mentioned above
+   - This often resolves caching or configuration issues
+
+6. **Fix for "404: NOT_FOUND Code: NOT_FOUND ID: lhr1::xxxxxx" Error**:
+   If you see this specific error format:
+   - The issue is usually related to the `vercel.json` configuration
+   - Try updating `vercel.json` with this configuration:
+     ```json
+     {
+       "version": 2,
+       "builds": [
+         { "src": "api/index.js", "use": "@vercel/node" },
+         { 
+           "src": "package.json", 
+           "use": "@vercel/static-build", 
+           "config": { 
+             "distDir": "client/dist"
+           }
+         }
+       ],
+       "routes": [
+         {
+           "src": "/api/(.*)",
+           "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+           "headers": {
+             "Access-Control-Allow-Origin": "*",
+             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+             "Access-Control-Allow-Headers": "X-Requested-With, Content-Type, Accept, Authorization"
+           },
+           "dest": "/api/index.js"
+         },
+         { "src": "/assets/(.*)", "dest": "/client/dist/assets/$1" },
+         { "src": "/videos/(.*)", "dest": "/client/dist/videos/$1" },
+         { "src": "/images/(.*)", "dest": "/client/dist/images/$1" },
+         { "src": "/favicon.ico", "dest": "/client/dist/favicon.ico" },
+         { "src": "/(.*)\\.js", "dest": "/client/dist/$1.js" },
+         { "src": "/(.*)\\.css", "dest": "/client/dist/$1.css" },
+         { "handle": "filesystem" },
+         { "src": "/(.*)", "dest": "/client/dist/index.html" }
+       ]
+     }
+     ```
+   - Make sure the `distDir` value matches your project's output directory
+
+7. **Modify the Build Process (Advanced)**:
+   If all other solutions fail:
+   - Try modifying your package.json build script:
+     ```json
+     "build": "vite build && cp -r client/dist dist"
+     ```
+   - This creates a duplicate of the dist folder at the root level
+   - Then in your Vercel project settings, set the Output Directory to just `dist`
+
+### Other Common Issues
+
 1. **Check environment variables**
    - Ensure all required environment variables are correctly set
    - Verify API keys are valid and correctly formatted
@@ -107,7 +195,15 @@ If you encounter issues with the deployment:
    - Use a tool like Postman to test API endpoints directly
    - Check for any CORS issues
 
-4. **Common issues**
-   - Database connection: Ensure your Neon PostgreSQL database is accessible from Vercel
-   - API keys: Verify all API keys are correctly formatted and have necessary permissions
-   - Serverless function timeout: If operations take too long, adjust function timeout in Vercel settings
+4. **Database connection issues**
+   - Ensure your Neon PostgreSQL database is accessible from Vercel
+   - Verify the database URL format is correct
+   - Check if your database requires SSL connection
+   
+5. **API keys issues**
+   - Verify all API keys are correctly formatted and have necessary permissions
+   - For Stripe, ensure both secret and publishable keys are set
+
+6. **Performance issues**
+   - If operations take too long, adjust function timeout in Vercel settings
+   - Consider optimizing database queries and API responses

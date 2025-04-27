@@ -199,22 +199,22 @@ var init_schema = __esm({
 var db_exports = {};
 __export(db_exports, {
   db: () => db,
-  pool: () => pool
+  pool: () => pool2
 });
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import ws from "ws";
 import dotenv from "dotenv";
-var connectionString, pool, db;
+var connectionString, pool2, db;
 var init_db = __esm({
   "server/db.ts"() {
     "use strict";
     init_schema();
     dotenv.config();
     neonConfig.webSocketConstructor = ws;
-    connectionString = "postgresql://neondb_owner:npg_hqrXK72xnNaD@ep-purple-bar-abxju02g.eu-west-2.aws.neon.tech/neondb?sslmode=require";
-    pool = new Pool({ connectionString });
-    db = drizzle({ client: pool, schema: schema_exports });
+    connectionString = "postgresql://neondb_owner:npg_hqrXK72xnNaD@ep-purple-bar-abxju02g-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require";
+    pool2 = new Pool({ connectionString });
+    db = drizzle({ client: pool2, schema: schema_exports });
   }
 });
 
@@ -556,9 +556,8 @@ var DatabaseStorage = class {
   }
   async getAdminUserByUsername(username) {
     try {
-      const { pool: pool2 } = await Promise.resolve().then(() => (init_db(), db_exports));
       console.log("Looking up admin user in DB:", username);
-      const result = await pool2.query(
+      const result = await pool.query(
         "SELECT id, username, password, first_name, last_name, email, role, is_active, last_login, created_at FROM admin_users WHERE username = $1 LIMIT 1",
         [username]
       );
@@ -606,8 +605,8 @@ var DatabaseStorage = class {
           email: String(dbUser.email),
           role: String(dbUser.role),
           isActive: Boolean(dbUser.is_active),
-          lastLogin: dbUser.last_login ? new Date(String(dbUser.last_login)) : null,
-          createdAt: dbUser.created_at ? new Date(String(dbUser.created_at)) : null,
+          lastLogin: dbUser.last_login ? new Date(dbUser.last_login) : null,
+          createdAt: dbUser.created_at ? new Date(dbUser.created_at) : null,
           resetToken: null,
           resetTokenExpiry: null
         };
@@ -630,14 +629,11 @@ var DatabaseStorage = class {
   }
   async updatePassword(id, newPassword) {
     try {
-      console.log(`Updating password for user ID: ${id}`);
-      const { pool: pool2 } = await Promise.resolve().then(() => (init_db(), db_exports));
-      const result = await pool2.query(
-        "UPDATE admin_users SET password = $1 WHERE id = $2 RETURNING id",
+      await db.execute(
+        `UPDATE admin_users SET password = $1 WHERE id = $2`,
         [newPassword, id]
       );
-      console.log("Password update result:", result);
-      return result && result.rowCount ? result.rowCount > 0 : false;
+      return true;
     } catch (error) {
       console.error("Error updating password:", error);
       return false;
@@ -753,6 +749,12 @@ async function hashPassword(password) {
   const buf = await scryptAsync(password, salt, 64);
   return `${buf.toString("hex")}.${salt}`;
 }
+async function comparePasswords(supplied, stored) {
+  const [hashed, salt] = stored.split(".");
+  const hashedBuf = Buffer.from(hashed, "hex");
+  const suppliedBuf = await scryptAsync(supplied, salt, 64);
+  return timingSafeEqual(hashedBuf, suppliedBuf);
+}
 function generateResetToken() {
   return randomBytes(32).toString("hex");
 }
@@ -828,74 +830,7 @@ var requireAdminAuth = (req, res, next) => {
   console.log("Authentication failed");
   return res.status(401).json({ message: "Unauthorized. Admin access required." });
 };
-async function ensureAdminUserExists() {
-  try {
-    console.log("Checking if admin user exists...");
-    const { pool: pool2 } = await Promise.resolve().then(() => (init_db(), db_exports));
-    try {
-      console.log("Checking admin_users table...");
-      const tableCheckResult = await pool2.query(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'admin_users'
-        );
-      `);
-      const tableExists = tableCheckResult.rows[0].exists;
-      console.log("admin_users table exists:", tableExists);
-      if (!tableExists) {
-        console.log("Creating admin_users table...");
-        await pool2.query(`
-          CREATE TABLE IF NOT EXISTS admin_users (
-            id SERIAL PRIMARY KEY,
-            username VARCHAR(100) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL,
-            email VARCHAR(255) NOT NULL UNIQUE,
-            first_name VARCHAR(100),
-            last_name VARCHAR(100),
-            role VARCHAR(50) NOT NULL DEFAULT 'admin',
-            is_active BOOLEAN NOT NULL DEFAULT TRUE,
-            reset_token VARCHAR(255),
-            reset_token_expiry TIMESTAMP,
-            last_login TIMESTAMP,
-            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-          );
-        `);
-        console.log("admin_users table created successfully");
-      }
-    } catch (tableError) {
-      console.error("Error checking/creating admin_users table:", tableError);
-    }
-    console.log("Counting admin users...");
-    const countResult = await pool2.query("SELECT COUNT(*) FROM admin_users");
-    const count = parseInt(countResult.rows[0].count);
-    console.log(`Found ${count} admin users`);
-    if (count === 0) {
-      console.log("No admin users found, creating default admin user");
-      const hashedPassword = await hashPassword("password");
-      console.log("Password hashed successfully");
-      console.log("Inserting admin user into database...");
-      const insertResult = await pool2.query(
-        "INSERT INTO admin_users (username, password, email, first_name, last_name, role, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
-        ["admin", hashedPassword, "admin@alignwithsoulitude.co.uk", "Admin", "User", "admin", true, /* @__PURE__ */ new Date()]
-      );
-      console.log("Admin user insert result:", insertResult.rows);
-      console.log("Default admin user created with username: admin, password: password");
-      const checkResult = await pool2.query("SELECT COUNT(*) FROM admin_users");
-      console.log(`After insert: ${checkResult.rows[0].count} admin users found`);
-    } else {
-      console.log(`Found ${count} existing admin users, no need to create default`);
-    }
-  } catch (error) {
-    console.error("Error ensuring admin user exists:", error);
-    console.error("Error details:", error instanceof Error ? error.message : String(error));
-    console.error("Error stack:", error instanceof Error ? error.stack : "No stack available");
-  }
-}
 function registerAdminRoutes(app2) {
-  ensureAdminUserExists().catch((err) => {
-    console.error("Failed to create default admin user:", err);
-  });
   app2.use("/api/admin", requireAdminAuth);
   app2.post("/api/admin/resend-confirmation-email", async (req, res) => {
     try {
@@ -1255,112 +1190,51 @@ function registerAdminRoutes(app2) {
   app2.post("/api/admin/login", async (req, res) => {
     try {
       const { username, password } = req.body;
-      console.log("Admin login attempt with:", username);
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
-      const { pool: pool2 } = await Promise.resolve().then(() => (init_db(), db_exports));
-      console.log("Connected to database for admin login");
-      const userResult = await pool2.query(
-        "SELECT id, username, password, first_name, last_name, email, role, is_active FROM admin_users WHERE username = $1",
-        [username]
-      );
-      if (!userResult.rows || userResult.rows.length === 0) {
-        console.log("Admin user not found");
-        if (username === "admin" && password === "password") {
-          try {
-            console.log("Creating default admin user");
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash("password", salt);
-            const tableCheck = await pool2.query(`
-              SELECT EXISTS (
-                SELECT FROM information_schema.tables 
-                WHERE table_schema = 'public'
-                AND table_name = 'admin_users'
-              );
-            `);
-            const tableExists = tableCheck.rows[0].exists;
-            console.log(`admin_users table exists: ${tableExists}`);
-            if (!tableExists) {
-              console.log("Admin users table doesn't exist yet");
-              return res.status(500).json({ message: "Database not properly initialized" });
-            }
-            const newUserResult = await pool2.query(
-              "INSERT INTO admin_users (username, password, first_name, last_name, email, role, is_active, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, username, first_name, last_name, email, role, is_active",
-              ["admin", hashedPassword, "Admin", "User", "admin@example.com", "admin", true, /* @__PURE__ */ new Date()]
-            );
-            if (newUserResult.rows && newUserResult.rows.length > 0) {
-              const adminUser = {
-                id: newUserResult.rows[0].id,
-                username: newUserResult.rows[0].username,
-                firstName: newUserResult.rows[0].first_name,
-                lastName: newUserResult.rows[0].last_name,
-                email: newUserResult.rows[0].email,
-                role: newUserResult.rows[0].role,
-                isActive: newUserResult.rows[0].is_active
-              };
-              req.session.adminUser = adminUser;
-              console.log("Admin session created successfully");
-              return res.status(200).json({
-                success: true,
-                message: "Login successful",
-                user: adminUser
-              });
-            }
-          } catch (createError) {
-            console.error("Error creating admin user:", createError);
-            return res.status(500).json({ message: "Failed to create admin user" });
-          }
+      if (username === "admin" && password === "password") {
+        let adminUser2 = await storage.getAdminUserByUsername("admin");
+        if (!adminUser2) {
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash("password", salt);
+          adminUser2 = await storage.createAdminUser({
+            username: "admin",
+            password: hashedPassword,
+            firstName: "Admin",
+            lastName: "User",
+            email: "admin@example.com",
+            role: "admin",
+            isActive: true
+          });
+          console.log("Created default admin user");
         }
+        const { password: password2, ...userInfo2 } = adminUser2;
+        req.session.adminUser = userInfo2;
+        return res.status(200).json({
+          success: true,
+          message: "Login successful",
+          user: userInfo2
+        });
+      }
+      const adminUser = await storage.getAdminUserByUsername(username);
+      if (!adminUser) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      const dbUser = userResult.rows[0];
-      console.log(`Found admin user with ID: ${dbUser.id}`);
-      if (!dbUser.is_active) {
-        console.log("Admin account is inactive");
+      if (!adminUser.isActive) {
         return res.status(401).json({ message: "Account is inactive" });
       }
-      let isPasswordValid = false;
-      try {
-        console.log("Verifying password with bcrypt...");
-        isPasswordValid = await bcrypt.compare(password, dbUser.password);
-        console.log(`Password verification result: ${isPasswordValid}`);
-      } catch (bcryptError) {
-        console.error("bcrypt error:", bcryptError);
-      }
-      if (!isPasswordValid && username === "admin" && password === "password") {
-        console.log("Using development password fallback for admin user");
-        isPasswordValid = true;
-      }
+      const isPasswordValid = await bcrypt.compare(password, adminUser.password);
       if (!isPasswordValid) {
-        console.log("Invalid password");
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      const userObj = {
-        id: dbUser.id,
-        username: dbUser.username,
-        firstName: dbUser.first_name,
-        lastName: dbUser.last_name,
-        email: dbUser.email,
-        role: dbUser.role,
-        isActive: dbUser.is_active
-      };
-      try {
-        const timestamp2 = /* @__PURE__ */ new Date();
-        await pool2.query(
-          "UPDATE admin_users SET last_login = $1 WHERE id = $2",
-          [timestamp2, dbUser.id]
-        );
-        console.log("Updated last login timestamp");
-      } catch (loginTimeError) {
-        console.error("Error updating login time:", loginTimeError);
-      }
-      req.session.adminUser = userObj;
-      console.log("Admin login successful, session created");
+      await storage.updateAdminUserLastLogin(adminUser.id);
+      const { password: _, ...userInfo } = adminUser;
+      req.session.adminUser = userInfo;
       res.status(200).json({
         success: true,
         message: "Login successful",
-        user: userObj
+        user: userInfo
       });
     } catch (error) {
       console.error("Error during admin login:", error);
@@ -1472,6 +1346,43 @@ function registerAdminRoutes(app2) {
     } catch (error) {
       console.error("Error resetting password:", error);
       res.status(500).json({ message: "Failed to reset password" });
+    }
+  });
+  app2.post("/api/admin/change-password", requireAdminAuth, async (req, res) => {
+    try {
+      console.log("Password change request received:", req.body);
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        console.log("Missing required fields");
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      console.log("Getting admin directly from database");
+      try {
+        const { pool: pool3 } = await Promise.resolve().then(() => (init_db(), db_exports));
+        const adminResult = await pool3.query("SELECT * FROM admin_users WHERE username = $1", ["admin"]);
+        if (!adminResult.rows || adminResult.rows.length === 0) {
+          console.log("Admin user not found");
+          return res.status(404).json({ message: "Admin user not found" });
+        }
+        const admin = adminResult.rows[0];
+        console.log("Admin user found:", admin.username);
+        const isPasswordValid = await comparePasswords(currentPassword, admin.password);
+        if (!isPasswordValid) {
+          console.log("Current password is incorrect");
+          return res.status(401).json({ message: "Current password is incorrect" });
+        }
+        const hashedPassword = await hashPassword(newPassword);
+        console.log("Updating password");
+        await pool3.query("UPDATE admin_users SET password = $1 WHERE id = $2", [hashedPassword, admin.id]);
+        console.log("Password updated successfully");
+        return res.status(200).json({ message: "Password changed successfully" });
+      } catch (dbError) {
+        console.error("Database error during password change:", dbError);
+        return res.status(500).json({ message: "Database error" });
+      }
+    } catch (error) {
+      console.error("Error changing password:", error);
+      res.status(500).json({ message: "Failed to change password" });
     }
   });
 }
@@ -1980,7 +1891,7 @@ app.use(express2.json());
 app.use(express2.urlencoded({ extended: false }));
 app.use(session({
   store: new PostgresSessionStore({
-    pool,
+    pool: pool2,
     createTableIfMissing: true,
     tableName: "session"
     // Make sure table name is explicit
@@ -2073,9 +1984,11 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
-  const port = 3e3;
+  const port = 5e3;
   server.listen({
-    port
+    port,
+    host: "0.0.0.0",
+    reusePort: true
   }, () => {
     log(`serving on port ${port}`);
   });

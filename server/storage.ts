@@ -395,10 +395,10 @@ export class DatabaseStorage implements IStorage {
   
   async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
     try {
-      // Use the same approach as getAdminUserByUsername
+      // Use db directly for this operation
+      // We'll use a raw SQL query here for compatibility 
       const result = await db.execute(
-        `SELECT id, username, password, first_name, last_name, email, role, is_active, last_login, created_at 
-         FROM admin_users WHERE email = $1 LIMIT 1`,
+        'SELECT id, username, password, first_name, last_name, email, role, is_active, last_login, created_at FROM admin_users WHERE email = $1 LIMIT 1',
         [email]
       );
       

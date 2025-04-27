@@ -1,6 +1,33 @@
 /*
 IMPORTANT VERCEL DEPLOYMENT INSTRUCTIONS:
-1. Make sure to add all environment variables in the Vercel project settings:
+===========================================================
+
+TO FIX 404 NOT_FOUND ERRORS:
+---------------------------
+1. Go to Vercel Project Settings:
+   - Go to your project dashboard in Vercel
+   - Click "Settings" tab at the top
+   - Under "Build & Development Settings"
+   - Set "Output Directory" to "client/dist"
+   - Save and redeploy
+   
+2. Check Framework Preset:
+   - In the same settings page
+   - Make sure Framework Preset is set to "Vite"
+   - If not, change it and redeploy
+   
+3. Check vercel.json configuration:
+   - Ensure it contains proper routes for both API and frontend
+   - API routes should point to api/index.js
+   - Frontend routes should serve client/index.html
+
+4. Function Region Setting:
+   - Go to Settings > Functions
+   - Set the region to match your Neon database region
+   - This reduces latency for database operations
+
+5. Environment Variables:
+   Add these environment variables in Vercel Project Settings:
    - DATABASE_URL: Your Neon PostgreSQL connection string
    - STRIPE_SECRET_KEY: Your Stripe secret key
    - VITE_STRIPE_PUBLIC_KEY: Your Stripe publishable key
@@ -9,14 +36,15 @@ IMPORTANT VERCEL DEPLOYMENT INSTRUCTIONS:
    - SENDER_EMAIL: Email address for sending notifications
    - SENDER_NAME: Display name for the sender email
    - SESSION_SECRET: Random string for session security
+   
+6. If you still get a 404 NOT_FOUND error:
+   - Try creating a new project in Vercel
+   - Import your repository again
+   - Apply all settings as mentioned above
+   - This sometimes resolves caching issues
 
-2. If you get a 404 NOT_FOUND error, try:
-   - Going to your Vercel project settings
-   - Under "Build & Development Settings", set the Output Directory to "client/dist"
-   - Redeploy your project
-
-3. Make sure your Vercel's Project Settings > Functions Region
-   is set to the same region as your Neon database for optimal performance
+For full deployment details, see the VERCEL_DEPLOYMENT_GUIDE.md file.
+===========================================================
 */
 
 const express = require('express');
