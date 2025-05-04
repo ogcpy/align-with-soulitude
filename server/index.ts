@@ -15,6 +15,7 @@ app.use(express.json());
 pool.connect()
   .then(() => console.log('Database connected successfully'))
   .catch(err => console.error('Database connection error:', err));
+  process.exit(1);
 app.use(express.urlencoded({ extended: false }));
 
 // Setup session middleware with more permissive settings for development
@@ -116,6 +117,41 @@ app.use((req, res, next) => {
     console.log("Invalid credentials");
     return res.status(401).json({ message: "Invalid credentials" });
   });
+
+  // Add this right after your session middleware
+app.get('/api/test-connection', async (req: Request, res: Response) => {
+  try {
+    // Test database connection
+    const dbResult = await pool.query('SELECT NOW() AS current_time');
+    
+    // Test environment variables
+    const envVars = {
+      databaseUrl: process.env.DATABASE_URL ? '*****' + process.env.DATABASE_URL.slice(-15) : 'MISSING',
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    };
+
+    res.json({
+      status: 'success',
+      database: {
+        connected: true,
+        currentTime: dbResult.rows[0].current_time
+      },
+      environment: envVars
+    });
+  } catch (error) {
+    console.error('Connection test failed:', error);
+    res.status(500).json({
+      status: 'error',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      database: { connected: false },
+      environment: {
+        databaseUrl: process.env.DATABASE_URL ? '*****' + process.env.DATABASE_URL.slice(-15) : 'MISSING',
+        nodeEnv: process.env.NODE_ENV
+      }
+    });
+  }
+});
 
   // Register admin routes
   registerAdminRoutes(app);
