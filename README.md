@@ -1,80 +1,122 @@
 # Align with Soulitude
 
-A wellness platform offering spiritual alignment services and online booking.
+A wellness platform offering holistic services including Sound Healing, Inner Dance & Kundalini, and Vedic Astrology Reading.
 
-## Project Overview
+## Project Structure
 
-This project is a React-based wellness platform for "Align with Soulitude" that offers a streamlined, intuitive booking experience with advanced administrative tools and personalized user interactions.
+This project is structured for deployment on Render with separate client and server applications:
 
-### Features
+- `/client` - React frontend
+- `/server` - Node.js/Express backend API
 
-- Online consultation booking system
-- Availability calendar with time slot selection
-- Secure payment processing with Stripe
-- Admin dashboard for managing appointments
-- Email confirmations via SendGrid
-- Responsive design for all devices
+## Local Setup
 
-## Technology Stack
+### Prerequisites
 
-- **Frontend**: React.js with Shadcn UI components
-- **Backend**: Express.js
-- **Database**: PostgreSQL with Drizzle ORM
-- **Styling**: Tailwind CSS
-- **Form Validation**: Zod
-- **Email**: SendGrid
-- **Payments**: Stripe
-- **Authentication**: Custom admin auth
+- Node.js 18 or higher
+- npm or yarn
+- PostgreSQL database
 
-## Deployment Instructions
+### Client Setup
 
-### Deploy on Netlify
+1. Navigate to the client directory:
+   ```
+   cd client
+   ```
 
-1. **Connect to GitHub**:
-   - Push this repository to GitHub
-   - Log in to Netlify and click "New site from Git"
-   - Select your GitHub repository
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-2. **Configure Build Settings**:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
+3. Create a `.env` file based on `.env.example`:
+   ```
+   cp .env.example .env
+   ```
 
-3. **Environment Variables**:
-   Set the following environment variables in the Netlify dashboard:
+4. Start the development server:
+   ```
+   npm run dev
+   ```
 
-   - `DATABASE_URL` - Your Neon PostgreSQL connection URL
-   - `STRIPE_SECRET_KEY` - Stripe secret key
-   - `VITE_STRIPE_PUBLIC_KEY` - Stripe publishable key
-   - `SENDGRID_API_KEY` - SendGrid API key
-   - `SESSION_SECRET` - Random string for session security
-   - `SENDER_EMAIL` - Email address for sending notifications
-   - `SENDER_NAME` - Name for sending notifications
+5. The client will be available at http://localhost:5173
 
-4. **Deploy**:
-   - Click "Deploy site"
-   - Netlify will build and deploy your site
-   - You can set up a custom domain in the Netlify settings
+### Server Setup
 
-### Update DNS Settings (for custom domain)
+1. Navigate to the server directory:
+   ```
+   cd server
+   ```
 
-If you're using a custom domain:
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-1. Add your custom domain in the Netlify site settings
-2. Update your domain's DNS settings to point to Netlify's servers
-3. Netlify will automatically provision a free SSL certificate
+3. Create a `.env` file based on `.env.example`:
+   ```
+   cp .env.example .env
+   ```
 
-## Local Development
+4. Update the environment variables in the `.env` file:
+   - Set `DATABASE_URL` to your PostgreSQL connection string
+   - Configure email settings (`SENDER_EMAIL`, `MAILCHIMP_TRANSACTIONAL_KEY`, etc.)
+   - Set `STRIPE_SECRET_KEY` for payment processing
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables in a `.env` file
-4. Start the development server: `npm run dev`
+5. Start the development server:
+   ```
+   npm run dev
+   ```
 
-## Administrator Access
+6. The API will be available at http://localhost:3001
 
-Administrative access is available through the /admin route after deployment. 
+## Deployment on Render
 
-For security reasons:
-1. Admin credentials must be set up during the first deployment
-2. Use a strong, unique password for production
-3. Keep your admin credentials secure and never share them
+### Frontend Deployment
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Select the `/client` directory as the root directory
+4. Use the following settings:
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run preview -- --port $PORT`
+   - Environment Variables: Add `VITE_API_URL` pointing to your backend URL
+
+### Backend Deployment
+
+1. Create a new Web Service on Render
+2. Connect your GitHub repository
+3. Select the `/server` directory as the root directory
+4. Use the following settings:
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm start`
+   - Environment Variables: Set up all variables from `.env.example`, especially:
+     - `DATABASE_URL` (Use a Render PostgreSQL instance)
+     - `FRONTEND_URL` (Your frontend Render URL)
+     - `SESSION_SECRET`
+     - `STRIPE_SECRET_KEY`
+     - `MAILCHIMP_TRANSACTIONAL_KEY` or `SENDGRID_API_KEY`
+
+## API Documentation
+
+The API provides the following endpoints:
+
+- **User Authentication**
+  - `/api/customer/login` - Customer login
+  - `/api/customer/register` - Customer registration
+  - `/api/customer/profile` - Get/update customer profile
+
+- **Services & Bookings**
+  - `/api/services` - Get available services
+  - `/api/available-slots` - Get available booking slots
+  - `/api/consultations` - Book a consultation
+  
+- **Admin Routes**
+  - `/api/admin/login` - Admin login
+  - `/api/admin/services` - Manage services
+  - `/api/admin/slots` - Manage available slots
+  - `/api/admin/consultations` - View and manage consultations
+
+## Contact
+
+For any questions or support, please contact the development team.

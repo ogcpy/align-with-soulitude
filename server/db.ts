@@ -1,33 +1,35 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import dotenv from 'dotenv';
 
+// Load environment variables
 dotenv.config();
 
-// Configure WebSocket for Neon
-if (process.env.NODE_ENV === 'production') {
-  // In production (Vercel), use the native WebSocket implementation
-  neonConfig.webSocketConstructor = WebSocket;
-} else {
-  // In development, use the ws package
-  neonConfig.webSocketConstructor = ws;
-}
-
-// Use environment variable for database connection
+// Get the database connection string from environment variables
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-// Configure pool with SSL settings
+// Create a PostgreSQL connection pool
 export const pool = new Pool({ 
   connectionString,
-  ssl: {
-    rejectUnauthorized: false // Required for Vercel deployment
-  }
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-export const db = drizzle({ client: pool, schema });
+// Create a Drizzle ORM instance
+export const db = drizzle(pool);
+
+// Export a function to test the database connection
+export async function testConnection() {
+  try {
+    const client = await pool.connect();
+    console.log('Successfully connected to the database');
+    client.release();
+    return true;
+  } catch (error) {
+    console.error('Failed to connect to the database:', error);
+    return false;
+  }
+}

@@ -1,131 +1,138 @@
-import { Request, Response, NextFunction } from "express";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
-import { storage } from "./storage";
-import { emailConfig } from "./config";
-import * as sendgrid from "@sendgrid/mail";
+import { Express, Request, Response, NextFunction } from 'express';
+import passport from 'passport';
+import { Strategy as LocalStrategy } from 'passport-local';
+import bcrypt from 'bcrypt';
+import { db } from './db';
 
-const scryptAsync = promisify(scrypt);
-
-// Password hashing function
-export async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+// Helper function to hash passwords
+export async function hashPassword(password: string): Promise<string> {
+  const saltRounds = 10;
+  return await bcrypt.hash(password, saltRounds);
 }
 
-// Password verification function
-export async function comparePasswords(supplied: string, stored: string) {
-  try {
-    // Check if stored password has the expected format (hash.salt)
-    if (!stored || !stored.includes(".")) {
-      console.log("Stored password doesn't have the expected format");
-      // For simple comparison (not recommended for production)
-      return supplied === stored;
+// Helper function to compare passwords
+export async function comparePasswords(plainPassword: string, hashedPassword: string): Promise<boolean> {
+  return await bcrypt.compare(plainPassword, hashedPassword);
+}
+
+// Function to set up authentication
+export function setupAuth(app: Express) {
+  // Set up passport local strategy for admin authentication
+  passport.use(
+    'local',
+    new LocalStrategy(async (username, password, done) => {
+      try {
+        // Find user by username
+        const [user] = await db.query.admin_users.findMany({
+          where: (users, { eq }) => eq(users.username, username)
+        });
+
+        // If user doesn't exist or password doesn't match
+        if (!user || !(await comparePasswords(password, user.password))) {
+          return done(null, false, { message: 'Incorrect username or password' });
+        }
+
+        // Authentication successful
+        return done(null, user);
+      } catch (error) {
+        return done(error);
+      }
+    })
+  );
+
+  // Serialize user for session
+  passport.serializeUser((user: any, done) => {
+    done(null, user.id);
+  });
+
+  // Deserialize user from session
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const [user] = await db.query.admin_users.findMany({
+        where: (users, { eq }) => eq(users.id, id)
+      });
+      
+      if (!user) {
+        return done(new Error('User not found'));
+      }
+      
+      done(null, user);
+    } catch (error) {
+      done(error);
+    }
+  });
+
+  // Initialize Passport and restore authentication state from session
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Admin login endpoint
+  app.post('/api/admin/login', (req: Request, res: Response, next: NextFunction) => {
+    passport.authenticate('local', (err: Error, user: any, info: any) => {
+      if (err) {
+        return next(err);
+      }
+      
+      if (!user) {
+        return res.status(401).json({ message: info.message || 'Authentication failed' });
+      }
+      
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          return next(loginErr);
+        }
+        
+        // Update last login timestamp
+        db.update(db.schema.admin_users)
+          .set({ last_login: new Date() })
+          .where(({ id }) => id.equals(user.id))
+          .execute()
+          .catch(console.error);
+        
+        // Return user info (excluding password)
+        const { password, ...userWithoutPassword } = user;
+        return res.json(userWithoutPassword);
+      });
+    })(req, res, next);
+  });
+
+  // Admin logout endpoint
+  app.post('/api/admin/logout', (req: Request, res: Response) => {
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+
+  // Check if user is authenticated
+  app.get('/api/admin/check-auth', (req: Request, res: Response) => {
+    if (req.isAuthenticated()) {
+      const { password, ...userWithoutPassword } = req.user as any;
+      return res.json(userWithoutPassword);
     }
     
-    const [hashed, salt] = stored.split(".");
-    if (!hashed || !salt) {
-      console.log("Missing hash or salt in stored password");
-      return false;
+    res.status(401).json({ message: 'Not authenticated' });
+  });
+
+  // Middleware to require authentication for protected routes
+  app.use('/api/admin/*', (req: Request, res: Response, next: NextFunction) => {
+    if (req.isAuthenticated()) {
+      return next();
     }
     
-    const hashedBuf = Buffer.from(hashed, "hex");
-    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-    return timingSafeEqual(hashedBuf, suppliedBuf);
-  } catch (error) {
-    console.error("Error comparing passwords:", error);
-    return false;
-  }
-}
-
-// Generate a secure token for password reset
-export function generateResetToken() {
-  return randomBytes(32).toString("hex");
-}
-
-// Send a password reset email
-export async function sendPasswordResetEmail(email: string, resetToken: string) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.error("SENDGRID_API_KEY is not set");
-    throw new Error("Email service unavailable");
-  }
-
-  sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
-
-  // Set the reset link (should point to your frontend route that handles reset)
-  const resetLink = `${process.env.DOMAIN || 'https://alignwithsoulitude.co.uk'}/admin/reset-password?token=${resetToken}`;
-
-  const mailData = {
-    to: email,
-    from: {
-      email: emailConfig.senderEmail,
-      name: emailConfig.senderName,
-    },
-    subject: "Reset Your Password - Align with Soulitude",
-    text: `
-      Hello,
-      
-      You've requested to reset your password for your Align with Soulitude admin account.
-      
-      Please click on the link below to reset your password:
-      ${resetLink}
-      
-      This link will expire in 1 hour for security reasons.
-      
-      If you didn't request this, please ignore this email and your password will remain unchanged.
-      
-      Best regards,
-      Align with Soulitude Team
-    `,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eab69b; border-radius: 5px;">
-        <h2 style="color: #eab69b;">Password Reset Request</h2>
-        <p>Hello,</p>
-        <p>You've requested to reset your password for your Align with Soulitude admin account.</p>
-        <p>Please click on the button below to reset your password:</p>
-        <p style="text-align: center; margin: 25px 0;">
-          <a href="${resetLink}" style="background-color: #eab69b; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;">Reset Password</a>
-        </p>
-        <p>This link will expire in 1 hour for security reasons.</p>
-        <p>If you didn't request this, please ignore this email and your password will remain unchanged.</p>
-        <p>Best regards,<br>Align with Soulitude Team</p>
-      </div>
-    `,
-  };
-
-  try {
-    await sendgrid.send(mailData);
-    return true;
-  } catch (error) {
-    console.error("Error sending password reset email:", error);
-    throw new Error("Failed to send password reset email");
-  }
-}
-
-// Middleware to check if user is authenticated as admin
-export function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Unauthorized - Missing or invalid token format' });
-  }
-  
-  const token = authHeader.split(' ')[1];
-  
-  try {
-    const adminDataString = req.headers['admin-data'] || "{}";
-    const adminData = typeof adminDataString === 'string' ? JSON.parse(adminDataString) : adminDataString;
-    
-    if (!adminData || !adminData.timestamp || adminData.timestamp !== token) {
-      return res.status(401).json({ message: 'Unauthorized - Invalid token' });
+    // Exclude login and logout routes from authentication check
+    if (
+      req.path === '/api/admin/login' || 
+      req.path === '/api/admin/logout' ||
+      req.path === '/api/admin/check-auth'
+    ) {
+      return next();
     }
     
-    console.log('Admin route requested: ' + req.path);
-    console.log('User authenticated via Authorization header');
-    next();
-  } catch (error) {
-    console.error('Auth error:', error);
-    return res.status(401).json({ message: 'Unauthorized - Error processing authentication' });
-  }
+    res.status(401).json({ message: 'Authentication required' });
+  });
+
+  return app;
 }
